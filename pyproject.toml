@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "huta"
+version = "0.1.0"
+description = ""
+authors = ["salko-ua <chips69jamil69game@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+openpyxl = "^3.1.5"
+selenium = "^4.23.1"
+webdriver-manager = "^4.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
