@@ -26,15 +26,15 @@ table {
     color: #ffffff;
     font-size: 22px;
     font-weight: bold;
-    width: 1000px;
+    width: 200px;
 }
 td{
     color: black;
     border-radius: 2px;
     padding: 4px 8px;
     text-align: center;
-    font-size: 19px;
-    height: 26px;
+    font-size: 14px;
+    height: 24px;
 }
 td.white {
     background-color: #E8E8E8;
@@ -49,12 +49,12 @@ td.gray {
     font-size: 16px;
     font-weight: bold;
 }
-/*.middle {*/
-/*    min-width: 260px;*/
-/*}*/
-/*.end {*/
-/*    min-width: 36px;*/
-/*}*/
+.middle {
+    min-width: 136px;
+}
+.end {
+    min-width: 36px;
+}
 /*.clear {*/
 /*    background: radial-gradient(#11111b, #202020);*/
 /*}*/
