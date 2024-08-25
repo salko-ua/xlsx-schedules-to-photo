@@ -22,7 +22,7 @@ table {
 }
 .week-name {
     padding: 6px;
-    background-color: #A6A6A6;
+    background-color: #00188a;
     color: #ffffff;
     font-size: 22px;
     font-weight: bold;
@@ -37,14 +37,14 @@ td{
     height: 24px;
 }
 td.white {
-    background-color: #E8E8E8;
+    background-color: #a8beff;
 }
 td.gray {
-    background-color: #CBCBCB;
+    background-color: #7f92fb;
 }
 
 .start {
-    background-color: #A6A6A6;
+    background-color: #01144e;
     color: #ffffff;
     font-size: 16px;
     font-weight: bold;
