@@ -4,7 +4,7 @@
 }
 
 body {
-    background-color: white;
+    background-color: #1e1e2e;
     margin: 0;
     color: #bac2de;
     font-family: "e-Ukraine-bold", monospace;
@@ -22,14 +22,13 @@ table {
 }
 .week-name {
     padding: 6px;
-    background-color: #2e2e2e;
-    color: #ffffff;
+    background-color: #181825;
     font-size: 22px;
     font-weight: bold;
     width: 200px;
 }
 td{
-    color: black;
+    color: rgb(205, 214, 244);
     border-radius: 2px;
     padding: 4px 8px;
     text-align: center;
@@ -37,17 +36,19 @@ td{
     height: 24px;
 }
 td.white {
-    background-color: #E8E8E8;
+    background-color: #45475a;
 }
 td.gray {
-    background-color: #CBCBCB;
+    background-color: #313244;
 }
 
 .start {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: #11111b;
     font-size: 16px;
     font-weight: bold;
+}
+.accent {
+    color: #cba6f7;
 }
 .middle {
     min-width: 136px;

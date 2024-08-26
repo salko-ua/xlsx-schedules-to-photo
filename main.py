@@ -243,3 +243,4 @@ def parse_all_schedules_to_photo():
 
 if "__main__" == __name__:
     parse_all_schedules(38)
+    parse_all_schedules_to_photo()
