@@ -90,7 +90,7 @@ def transform_list_to_html_list(list_: list[list[str]]) -> list[list[str]]:
     result = []
     for count, row in enumerate(list_):
         # 2 gray ... 2 white etc.
-        color = "gray" if not ((count - 1) // 2) % 2 else "white"
+        color = "dark" if not ((count - 1) // 2) % 2 else "light"
         middle_clear = f"<td class='middle clear {color}'></td>"
         end_clear = f"<td class='end clear {color}'></td>"
         middle = f"<td class='middle {color}'>{row[0]}</td>"
@@ -192,51 +192,88 @@ def get_second_block(element: str, lesson: int, schedules: Schedule):
     """
 
 
+def get_theme(theme: str) -> dict:
+    return {
+        "black": {
+            "background-color": "white",
+            "start": "#000000",
+            "week-name": "#2e2e2e",
+            "light": "#E8E8E8",
+            "dark": "#CBCBCB",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "dark": {
+            "background-color": "white",
+            "start": "#000000",
+            "week-name": "#2e2e2e",
+            "light": "#E8E8E8",
+            "dark": "#CBCBCB",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+    }[theme]
+
+
 def import_data_to_html(schedules: Schedule):
+    colors = get_theme("black")
     text = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-        <link rel="stylesheet" href="../style.css">
-    </head>
-    <body>
-        <div class="center">
-            <table>
-                <tr class="week">
-                    <td class="start">1А</td>
-                    <td class="week-name" colspan="2">{schedules.monday.day}</td>
-                    <td class="week-name" colspan="2">{schedules.tuesday.day}</td>
-                    <td class="week-name" colspan="2">{schedules.wednesday.day}</td>
-                </tr>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        :root {{
+            --background-color: {colors["background-color"]};
+            --start: {colors["start"]};
+            --week-name: {colors["week-name"]};
+            --light: {colors["light"]};
+            --dark: {colors["dark"]};
+            --td-color-text: {colors["td-color-text"]};
+            --week-color-text: {colors["week-color-text"]};
+            --start-color-text: {colors["start-color-text"]};
+        }}
+    </style>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="center">
+        <table>
+            <tr class="week">
+                <td class="start">1А</td>
+                <td class="week-name" colspan="2">{schedules.monday.day}</td>
+                <td class="week-name" colspan="2">{schedules.tuesday.day}</td>
+                <td class="week-name" colspan="2">{schedules.wednesday.day}</td>
+            </tr>
 
-                {get_first_block("first", 1, schedules)}
-                {get_first_block("second", 2, schedules)}
-                {get_first_block("third", 3, schedules)}
-                {get_first_block("fourth", 4, schedules)}
-                {get_first_block("fifth", 5, schedules)}
-                {get_first_block("sixth", 6, schedules)}
+            {get_first_block("first", 1, schedules)}
+            {get_first_block("second", 2, schedules)}
+            {get_first_block("third", 3, schedules)}
+            {get_first_block("fourth", 4, schedules)}
+            {get_first_block("fifth", 5, schedules)}
+            {get_first_block("sixth", 6, schedules)}
 
 
-                <tr class="week">
-                    <td class="start">1А</td>
-                    <td class="week-name" colspan="2">{schedules.thursday.day}</td>
-                    <td class="week-name" colspan="2">{schedules.friday.day}</td>
-                    <td class="week-name" colspan="2">{schedules.monday.day}</td>
-                </tr>
-                {get_second_block("first", 1, schedules)}
-                {get_second_block("second", 2, schedules)}
-                {get_second_block("third", 3, schedules)}
-                {get_second_block("fourth", 4, schedules)}
-                {get_second_block("fifth", 5, schedules)}
-                {get_second_block("sixth", 6, schedules)}
-            </table>
-        </div>
+            <tr class="week">
+                <td class="start">1А</td>
+                <td class="week-name" colspan="2">{schedules.thursday.day}</td>
+                <td class="week-name" colspan="2">{schedules.friday.day}</td>
+                <td class="week-name" colspan="2">{schedules.monday.day}</td>
+            </tr>
+            {get_second_block("first", 1, schedules)}
+            {get_second_block("second", 2, schedules)}
+            {get_second_block("third", 3, schedules)}
+            {get_second_block("fourth", 4, schedules)}
+            {get_second_block("fifth", 5, schedules)}
+            {get_second_block("sixth", 6, schedules)}
+        </table>
+    </div>
 
-    </body>
-    </html>
-        """
+</body>
+</html>"""
 
     pathlib.Path(f"./variant/").mkdir(parents=True, exist_ok=True)
     with open(f"./variant/{schedules.group_name}.html", "w") as file:
@@ -252,15 +289,19 @@ def parse_all_schedules(count: int):
 
 def parse_all_schedules_to_photo():
     driver = webdriver.Firefox()
+    driver.set_window_size(height=1200, width=1000)
+    groups = []
     for i in range(37):
         group_name = glob("./variant/*", recursive=True)[i]
         html_file = "file://" + f"/home/salo/huta/{group_name}"
         driver.get(html_file)
-        driver.set_window_size(height=1200, width=1000)
         pathlib.Path(f"./screenshots").mkdir(parents=True, exist_ok=True)
-        driver.save_screenshot(f"./screenshots/{group_name[9:]}.png")
-        sleep(10)
-    # driver.quit()
+        driver.save_screenshot(f"./screenshots/{group_name[10:-5]}.png")
+        groups.append(f"{group_name[10:-5]}.png ")
+    driver.quit()
+
+    with open("index.html", "w") as file:
+        file.write("".join(groups))
 
 
 if "__main__" == __name__:
