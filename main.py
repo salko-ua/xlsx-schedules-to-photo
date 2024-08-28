@@ -192,7 +192,7 @@ def get_second_block(element: str, lesson: int, schedules: Schedule):
     """
 
 
-def get_theme(theme: str) -> dict:
+def get_theme() -> dict:
     return {
         "black": {
             "background-color": "white",
@@ -204,21 +204,101 @@ def get_theme(theme: str) -> dict:
             "week-color-text": "white",
             "start-color-text": "white",
         },
-        "dark": {
+        "gray": {
             "background-color": "white",
-            "start": "#000000",
-            "week-name": "#2e2e2e",
+            "start": "#A6A6A6",
+            "week-name": "#A6A6A6",
             "light": "#E8E8E8",
             "dark": "#CBCBCB",
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
         },
-    }[theme]
+        "red": {
+            "background-color": "white",
+            "start": "#5b0000",
+            "week-name": "#9b0000",
+            "light": "#ffbdbd",
+            "dark": "#ffa1a1",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "orange": {
+            "background-color": "white",
+            "start": "#b95102",
+            "week-name": "#d65900",
+            "light": "#ffb692",
+            "dark": "#fb9b63",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "purple": {
+            "background-color": "white",
+            "start": "#45007b",
+            "week-name": "#7701d1",
+            "light": "#e3c8ff",
+            "dark": "#d0a6ff",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "pink": {
+            "background-color": "white",
+            "start": "#680068",
+            "week-name": "#9e019e",
+            "light": "#fac8fa",
+            "dark": "#fb9ffb",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "green": {
+            "background-color": "white",
+            "start": "#125b00",
+            "week-name": "#178101",
+            "light": "#cafabe",
+            "dark": "#aeffa0",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "brown": {
+            "background-color": "white",
+            "start": "#591f01",
+            "week-name": "#833400",
+            "light": "rgba(96, 33, 1, 0.4)",
+            "dark": "rgba(96, 34, 0, 0.61)",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "blue": {
+            "background-color": "white",
+            "start": "#01144e",
+            "week-name": "#00188a",
+            "light": "#a8beff",
+            "dark": "#7f92fb",
+            "td-color-text": "black",
+            "week-color-text": "white",
+            "start-color-text": "white",
+        },
+        "catppuccino": {
+            "background-color": "1e1e2e",
+            "start": "#11111b",
+            "week-name": "#181825",
+            "light": "#45475a",
+            "dark": "#313244",
+            "td-color-text": "bac2de",
+            "week-color-text": "bac2de",
+            "start-color-text": "bac2de",
+        },
+    }
 
 
-def import_data_to_html(schedules: Schedule):
-    colors = get_theme("black")
+def import_data_to_html(schedules: Schedule, theme: str):
+    colors = get_theme()[theme]
     text = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -280,14 +360,14 @@ def import_data_to_html(schedules: Schedule):
         file.write(text)
 
 
-def parse_all_schedules(count: int):
+def parse_all_schedules(count: int, theme):
     # к-ть розкладів
     for i in range(1, count + 1):
         schedules = get_finished_schedule_object(i)
-        import_data_to_html(schedules)
+        import_data_to_html(schedules, theme)
 
 
-def parse_all_schedules_to_photo():
+def parse_all_schedules_to_photo(theme: str) -> None:
     driver = webdriver.Firefox()
     driver.set_window_size(height=1200, width=1000)
     groups = []
@@ -295,8 +375,8 @@ def parse_all_schedules_to_photo():
         group_name = glob("./variant/*", recursive=True)[i]
         html_file = "file://" + f"/home/salo/huta/{group_name}"
         driver.get(html_file)
-        pathlib.Path(f"./screenshots").mkdir(parents=True, exist_ok=True)
-        driver.save_screenshot(f"./screenshots/{group_name[10:-5]}.png")
+        pathlib.Path(f"./screenshots/{theme}").mkdir(parents=True, exist_ok=True)
+        driver.save_screenshot(f"./screenshots/{theme}/{group_name[10:-5]}.png")
         groups.append(f"{group_name[10:-5]}.png ")
     driver.quit()
 
@@ -305,5 +385,7 @@ def parse_all_schedules_to_photo():
 
 
 if "__main__" == __name__:
-    parse_all_schedules(38)
-    parse_all_schedules_to_photo()
+    for theme_name in get_theme():
+        print(theme_name)
+        parse_all_schedules(38, theme_name)
+        parse_all_schedules_to_photo(theme_name)
