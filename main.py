@@ -4,7 +4,8 @@ import typing as t
 import pathlib
 from selenium import webdriver
 from glob import glob
-from time import sleep
+from rembg import remove
+from PIL import Image
 
 # CONST
 WB = openpyxl.load_workbook("./Rozklad_23_24.xlsx")
@@ -72,6 +73,22 @@ class Schedule:
         )
 
 
+class Practice:
+    def __init__(self, color):
+        self.rowspan = 1
+        self.colspan = 2
+        self.color = color
+
+    def __bool__(self):
+        return True
+
+    def add_rowspan(self):
+        self.rowspan += 1
+
+    def __str__(self):
+        return f"<td class='end {self.color} practice_start' rowspan='{self.rowspan}' colspan='{self.colspan}'>Практика</td>"
+
+
 def get_data_from_sheet(column: int) -> list[list[str]]:
     result = []
     column = column * 2 + 1
@@ -82,28 +99,41 @@ def get_data_from_sheet(column: int) -> list[list[str]]:
         value1 = SHEET_FOR_PARSE.cell(row=row, column=column).value
         value2 = SHEET_FOR_PARSE.cell(row=row, column=column + 1).value
         result.append([value1, value2])
-
     return result
 
 
-def transform_list_to_html_list(list_: list[list[str]]) -> list[list[str]]:
+def transform_list_to_html_list(list_: list[list]) -> list[list[str]]:
     result = []
+    practice = False
     for count, row in enumerate(list_):
         # 2 gray ... 2 white etc.
         color = "dark" if not ((count - 1) // 2) % 2 else "light"
-        middle_clear = f"<td class='middle clear {color}'></td>"
-        end_clear = f"<td class='end clear {color}'></td>"
+        middle_clear = f"<td class='middle {color}'></td>"
+        end_clear = f"<td class='end {color}'></td>"
         middle = f"<td class='middle {color}'>{row[0]}</td>"
         end = f"<td class='end {color}'>{row[1]}</td>"
+        if count in [1, 13, 25, 37, 49, 61]:
+            practice = False
         if count == 0:
+            print(row[0], row[1])
             result.append([row[0], row[1]])
+        elif row[0] == "Практика":
+            practice = Practice(color)
+            result.append([practice, ""])
         elif row[0] is not None and row[1] is not None:
+            practice = False
             result.append([middle, end])
         elif row[0] is not None and row[1] is None:
+            practice = False
             result.append([middle, end_clear])
         elif row[0] is None and row[1] is None:
-            result.append([middle_clear, end_clear])
+            if practice:
+                result.append(["", ""])
+                practice.add_rowspan()
+            else:
+                result.append([middle_clear, end_clear])
         elif row[0] is None and row[1] is not None:
+            practice = False
             result.append([middle_clear, end])
     return result
 
@@ -130,7 +160,7 @@ def cut_big_words(list_: list[list[str]]) -> list[list[str]]:
                 try:
                     cut_words.append(change_on_it[f"{word}"])
                 except:
-                    cut_words.append(word)
+                    cut_words.append(word[:21])
             else:
                 cut_words.append(word)
         result.append(cut_words)
@@ -285,7 +315,7 @@ def get_theme() -> dict:
             "start-color-text": "white",
         },
         "catppuccino": {
-            "background-color": "1e1e2e",
+            "background-color": "#1e1e2e",
             "start": "#11111b",
             "week-name": "#181825",
             "light": "#45475a",
@@ -318,12 +348,20 @@ def import_data_to_html(schedules: Schedule, theme: str):
         }}
     </style>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        .practice_child {{
+            background-color: brown!important;
+        }}
+        .practice_start {{
+            background-color: gray!important;
+        }}
+    </style>
 </head>
 <body>
     <div class="center">
         <table>
             <tr class="week">
-                <td class="start">1А</td>
+                <td class="start">{schedules.group_name}</td>
                 <td class="week-name" colspan="2">{schedules.monday.day}</td>
                 <td class="week-name" colspan="2">{schedules.tuesday.day}</td>
                 <td class="week-name" colspan="2">{schedules.wednesday.day}</td>
@@ -338,7 +376,7 @@ def import_data_to_html(schedules: Schedule, theme: str):
 
 
             <tr class="week">
-                <td class="start">1А</td>
+                <td class="start">{schedules.group_name}</td>
                 <td class="week-name" colspan="2">{schedules.thursday.day}</td>
                 <td class="week-name" colspan="2">{schedules.friday.day}</td>
                 <td class="week-name" colspan="2">{schedules.monday.day}</td>
@@ -351,10 +389,8 @@ def import_data_to_html(schedules: Schedule, theme: str):
             {get_second_block("sixth", 6, schedules)}
         </table>
     </div>
-
 </body>
 </html>"""
-
     pathlib.Path(f"./variant/").mkdir(parents=True, exist_ok=True)
     with open(f"./variant/{schedules.group_name}.html", "w") as file:
         file.write(text)
@@ -367,9 +403,8 @@ def parse_all_schedules(count: int, theme):
         import_data_to_html(schedules, theme)
 
 
-def parse_all_schedules_to_photo(theme: str) -> None:
-    driver = webdriver.Firefox()
-    driver.set_window_size(height=1200, width=1000)
+def parse_all_schedules_to_photo(driver, theme: str) -> None:
+    # driver.fullscreen_window()
     groups = []
     for i in range(37):
         group_name = glob("./variant/*", recursive=True)[i]
@@ -378,14 +413,21 @@ def parse_all_schedules_to_photo(theme: str) -> None:
         pathlib.Path(f"./screenshots/{theme}").mkdir(parents=True, exist_ok=True)
         driver.save_screenshot(f"./screenshots/{theme}/{group_name[10:-5]}.png")
         groups.append(f"{group_name[10:-5]}.png ")
-    driver.quit()
+        print("image open")
+        inputs = Image.open(f"./screenshots/{theme}/{group_name[10:-5]}.png")
+        print("start remove")
+        output = remove(inputs)
+        print("save image")
+        output.save(f"./screenshots/{theme}/{group_name[10:-5]}.png")
+        print("end save")
 
     with open("index.html", "w") as file:
         file.write("".join(groups))
 
 
 if "__main__" == __name__:
+    driver = webdriver.Firefox()
     for theme_name in get_theme():
-        print(theme_name)
         parse_all_schedules(38, theme_name)
-        parse_all_schedules_to_photo(theme_name)
+        parse_all_schedules_to_photo(driver, theme_name)
+    driver.quit()

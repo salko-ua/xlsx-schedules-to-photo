@@ -4,13 +4,15 @@
 }
 
 body {
-    background-color: var(--background-color);
+    padding-left: 50px;
+    background-color: rgba(130, 70, 70, 0.93);
     margin: 0;
     color: #bac2de;
     font-family: "e-Ukraine-bold", monospace;
     width: 100%;
 }
 table {
+    background-color: var(--background-color);
     border-collapse: separate;
     border-spacing: 2px;
     float: left;
