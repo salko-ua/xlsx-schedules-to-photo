@@ -2,11 +2,12 @@ import openpyxl
 import dataclasses
 import typing as t
 import pathlib
-from selenium import webdriver
+from playwright.async_api import async_playwright
 from glob import glob
 from PIL import Image
 import time
 import threading
+import asyncio
 
 # CONST
 WB = openpyxl.load_workbook("./Rozklad_24_25.xlsx")
@@ -432,8 +433,7 @@ def post_process_image(screenshot):
     print(time.time() - now1, "end of save")
 
 
-def parse_all_schedules_to_photo(driver: webdriver.Firefox, theme: str) -> None:
-    driver.fullscreen_window()
+async def parse_all_schedules_to_photo(page, theme: str) -> None:
     groups_list = []
     group_name = glob(f"./variant/{theme}/*.html", recursive=True)
     pathlib.Path(f"./screenshots/{theme}").mkdir(parents=True, exist_ok=True)
@@ -444,9 +444,9 @@ def parse_all_schedules_to_photo(driver: webdriver.Firefox, theme: str) -> None:
         html_file = f"file:///home/salo/huta/{group_name[i]}"
 
         groups_list.append(group_names + " ")
-        driver.get(html_file)
+        await page.goto(html_file)
+        await page.screenshot(path=path_to_screenshot)
 
-        driver.save_screenshot(path_to_screenshot)
         print(time.time() - now1, "end save screenshot -------")
         post_process_image(path_to_screenshot)
         print(time.time() - now1, "end post  ------- ")
@@ -456,23 +456,24 @@ def parse_all_schedules_to_photo(driver: webdriver.Firefox, theme: str) -> None:
         file.write("".join(groups_list))
 
 
-def parsing_all_themes(theme_name: str, driver: webdriver.Firefox):
-    parse_all_schedules(1, theme_name)
-    parse_all_schedules_to_photo(driver, theme_name)
-    driver.quit()
+async def parsing_all_themes(theme_name: str, page):
+    parse_all_schedules(36, theme_name)
+    await parse_all_schedules_to_photo(page, theme_name)
 
 
-def main():
+async def main():
     now1 = time.time()
-    for theme in get_theme():
-        print(theme)
-        driver = webdriver.Firefox()
-        theme_process = threading.Thread(
-            target=parsing_all_themes, args=(theme, driver)
+    async with async_playwright() as p:
+        browser = await p.firefox.launch()
+        await asyncio.gather(
+            *[
+                parsing_all_themes(theme, await browser.new_page())
+                for theme in get_theme()
+            ]
         )
-        theme_process.start()
+        await browser.close()
     print(time.time() - now1, f"all themes done")
 
 
 if "__main__" == __name__:
-    main()
+    asyncio.run(main())
