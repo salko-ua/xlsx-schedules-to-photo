@@ -4,11 +4,12 @@ import typing as t
 import pathlib
 from selenium import webdriver
 from glob import glob
-from rembg import remove
 from PIL import Image
+import time
+import threading
 
 # CONST
-WB = openpyxl.load_workbook("./Rozklad_23_24.xlsx")
+WB = openpyxl.load_workbook("./Rozklad_24_25.xlsx")
 SHEET_FOR_PARSE = WB["Розклад"]
 
 
@@ -115,8 +116,7 @@ def transform_list_to_html_list(list_: list[list]) -> list[list[str]]:
         if count in [1, 13, 25, 37, 49, 61]:
             practice = False
         if count == 0:
-            print(row[0], row[1])
-            result.append([row[0], row[1]])
+            result.append([row[0].replace("-", ""), row[1]])
         elif row[0] == "Практика":
             practice = Practice(color)
             result.append([practice, ""])
@@ -233,6 +233,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#989898FF",
         },
         "gray": {
             "background-color": "white",
@@ -243,6 +244,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#989898FF",
         },
         "red": {
             "background-color": "white",
@@ -253,6 +255,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#E15B5BFF",
         },
         "orange": {
             "background-color": "white",
@@ -263,6 +266,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#ff9840",
         },
         "purple": {
             "background-color": "white",
@@ -273,6 +277,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#b783f9",
         },
         "pink": {
             "background-color": "white",
@@ -283,6 +288,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#eb85ff",
         },
         "green": {
             "background-color": "white",
@@ -293,6 +299,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#94f868",
         },
         "brown": {
             "background-color": "white",
@@ -303,6 +310,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "#956E5BFF",
         },
         "blue": {
             "background-color": "white",
@@ -313,6 +321,7 @@ def get_theme() -> dict:
             "td-color-text": "black",
             "week-color-text": "white",
             "start-color-text": "white",
+            "practice_start": "№6F8CF6FF",
         },
         "catppuccino": {
             "background-color": "#1e1e2e",
@@ -323,6 +332,7 @@ def get_theme() -> dict:
             "td-color-text": "bac2de",
             "week-color-text": "bac2de",
             "start-color-text": "bac2de",
+            "practice_start": "#474763",
         },
     }
 
@@ -345,17 +355,10 @@ def import_data_to_html(schedules: Schedule, theme: str):
             --td-color-text: {colors["td-color-text"]};
             --week-color-text: {colors["week-color-text"]};
             --start-color-text: {colors["start-color-text"]};
+            --practice_start: {colors["practice_start"]};
         }}
     </style>
-    <link rel="stylesheet" href="../style.css">
-    <style>
-        .practice_child {{
-            background-color: brown!important;
-        }}
-        .practice_start {{
-            background-color: gray!important;
-        }}
-    </style>
+    <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
     <div class="center">
@@ -391,8 +394,8 @@ def import_data_to_html(schedules: Schedule, theme: str):
     </div>
 </body>
 </html>"""
-    pathlib.Path(f"./variant/").mkdir(parents=True, exist_ok=True)
-    with open(f"./variant/{schedules.group_name}.html", "w") as file:
+    pathlib.Path(f"./variant/{theme}").mkdir(parents=True, exist_ok=True)
+    with open(f"./variant/{theme}/{schedules.group_name}.html", "w") as file:
         file.write(text)
 
 
@@ -403,31 +406,73 @@ def parse_all_schedules(count: int, theme):
         import_data_to_html(schedules, theme)
 
 
-def parse_all_schedules_to_photo(driver, theme: str) -> None:
-    # driver.fullscreen_window()
-    groups = []
-    for i in range(37):
-        group_name = glob("./variant/*", recursive=True)[i]
-        html_file = "file://" + f"/home/salo/huta/{group_name}"
+def post_process_image(screenshot):
+    now1 = time.time()
+    image = Image.open(screenshot)
+
+    image_data = image.load()
+    width, height = image.size
+
+    cut_color = image_data[width - 1, height - 1]
+    x, y = 0, 0
+
+    for height in range(height):
+        r, g, b, a = image_data[0, height]
+        if (r, g, b, a) != cut_color:
+            x = height
+
+    for width in range(width):
+        r, g, b, a = image_data[width, 0]
+        if (r, g, b, a) != cut_color:
+            y = width
+    print(time.time() - now1, "end math")
+    im1 = image.crop((0.0, 0.0, y, x))
+    print(time.time() - now1, "end of crop")
+    im1.save(screenshot)
+    print(time.time() - now1, "end of save")
+
+
+def parse_all_schedules_to_photo(driver: webdriver.Firefox, theme: str) -> None:
+    driver.fullscreen_window()
+    groups_list = []
+    group_name = glob(f"./variant/{theme}/*.html", recursive=True)
+    pathlib.Path(f"./screenshots/{theme}").mkdir(parents=True, exist_ok=True)
+    for i in range(len(group_name)):
+        now1 = time.time()
+        group_names = f"{group_name[i][-8:-5]}.png"
+        path_to_screenshot = f"./screenshots/{theme}/{group_names}"
+        html_file = f"file:///home/salo/huta/{group_name[i]}"
+
+        groups_list.append(group_names + " ")
         driver.get(html_file)
-        pathlib.Path(f"./screenshots/{theme}").mkdir(parents=True, exist_ok=True)
-        driver.save_screenshot(f"./screenshots/{theme}/{group_name[10:-5]}.png")
-        groups.append(f"{group_name[10:-5]}.png ")
-        print("image open")
-        inputs = Image.open(f"./screenshots/{theme}/{group_name[10:-5]}.png")
-        print("start remove")
-        output = remove(inputs)
-        print("save image")
-        output.save(f"./screenshots/{theme}/{group_name[10:-5]}.png")
-        print("end save")
+
+        driver.save_screenshot(path_to_screenshot)
+        print(time.time() - now1, "end save screenshot -------")
+        post_process_image(path_to_screenshot)
+        print(time.time() - now1, "end post  ------- ")
+        print(time.time() - now1, "end ------- ")
 
     with open("index.html", "w") as file:
-        file.write("".join(groups))
+        file.write("".join(groups_list))
+
+
+def parsing_all_themes(theme_name: str, driver: webdriver.Firefox):
+    parse_all_schedules(1, theme_name)
+    parse_all_schedules_to_photo(driver, theme_name)
+    driver.quit()
+
+
+def main():
+    now1 = time.time()
+    for theme in get_theme():
+        print(theme)
+        driver = webdriver.Firefox()
+        theme_process = threading.Thread(
+            target=parsing_all_themes, args=(theme, driver)
+        )
+        theme_process.start()
+    print(time.time() - now1, f"all themes done")
 
 
 if "__main__" == __name__:
-    driver = webdriver.Firefox()
-    for theme_name in get_theme():
-        parse_all_schedules(38, theme_name)
-        parse_all_schedules_to_photo(driver, theme_name)
-    driver.quit()
+    main()

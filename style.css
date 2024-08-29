@@ -4,9 +4,9 @@
 }
 
 body {
-    padding-left: 50px;
     background-color: rgba(130, 70, 70, 0.93);
     margin: 0;
+    padding: 0;
     color: #bac2de;
     font-family: "e-Ukraine-bold", monospace;
     width: 100%;
@@ -42,7 +42,10 @@ td.light {
 td.dark {
     background-color: var(--dark);
 }
-
+.practice_start {
+    font-size: 22px;
+    background-color: var(--practice_start);
+}
 .start {
     color: var(--start-color-text);
     background-color: var(--start);
