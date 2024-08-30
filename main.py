@@ -506,7 +506,7 @@ def import_data_to_html(schedules: Schedule, theme: str):
                 <td class="start">{schedules.group_name}</td>
                 <td class="week-name" colspan="2">{schedules.thursday.day}</td>
                 <td class="week-name" colspan="2">{schedules.friday.day}</td>
-                <td class="week-name" colspan="2">{schedules.monday.day}</td>
+                <td class="week-name" colspan="2">Субота</td>
             </tr>
             {get_second_block("first", 1, schedules)}
             {get_second_block("second", 2, schedules)}
