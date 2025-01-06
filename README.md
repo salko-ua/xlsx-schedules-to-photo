@@ -6,7 +6,7 @@
 [![Deploy](https://github.com/salko-ua/KOTEKBOT/actions/workflows/deploy.yml/badge.svg)](https://github.com/salko-ua/KOTEKBOT/actions/workflows/deploy.yml)
 
 A one-time script is convert schedules from xlsx format to png file like 1A.png,  
-and send them to the server from which KOTEKBOT uses them to display them on the bot.   
+and send them to the server from which [KOTEKBOT](https://github.com/salko-ua/KOTEKBOT) uses them to display them on the bot.   
 Dependencies are written in the pyproject.toml file,  
 The code is designed to run on machines that have DE and can run the firefox browser
 
