@@ -2,8 +2,7 @@
 
 [![Support Ukraine](https://badgen.net/badge/support/UKRAINE/?color=0057B8&labelColor=FFD700)](https://www.gov.uk/government/news/ukraine-what-you-can-do-to-help)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Python support versions badge](https://img.shields.io/badge/python-4.0-blue)](https://www.python.org/downloads/)
-[![Deploy](https://github.com/salko-ua/KOTEKBOT/actions/workflows/deploy.yml/badge.svg)](https://github.com/salko-ua/KOTEKBOT/actions/workflows/deploy.yml)
+[![Python support versions badge](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/)
 
 A one-time script is convert schedules from xlsx format to png file like 1A.png,  
 and send them to the server from which [KOTEKBOT](https://github.com/salko-ua/KOTEKBOT) uses them to display them on the bot.   
